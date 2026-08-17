@@ -1,1 +1,428 @@
+Name: B.SARAYU
+Register Number: 231FA04D96
+Section: 15
 
+## 1. Problem Statement
+
+Students need different technical skills, soft skills, academic performance and practical experience to become employable.
+
+Every student has different levels of programming knowledge, technical skills, communication skills, experience and placement preparation. So, it is useful to study these factors and understand the employability of students.
+
+In this project, the CSE Employability Dataset is used to create useful features from the student data. Feast is then used to store and retrieve these features. A machine learning model is also used to predict the employability of a student.
+
+## 2. Dataset
+
+The dataset contains 100 CSE students and 24 columns.
+
+### Number of Skills
+
+There are 15 skill-related columns in the dataset.
+
+### Technical Skills
+
+1. Programming
+2. DSA
+3. DBMS
+4. OS
+5. CN
+6. Python
+7. Java
+8. WebDevelopment
+9. AI_ML
+10. Cloud
+11. DevOps
+12. CyberSecurity
+
+### Soft Skills
+
+13. Communication
+14. Aptitude
+15. Teamwork
+
+### Dataset Columns
+
+StudentID
+Age
+Gender
+CGPA
+Programming
+DSA
+DBMS
+OS
+CN
+Python
+Java
+WebDevelopment
+AI_ML
+Cloud
+DevOps
+CyberSecurity
+Communication
+Aptitude
+Teamwork
+Internship
+Certifications
+Projects
+PlacementTraining
+Employability
+
+### Target
+
+The target column is Employability.
+
+It contains three values:
+
+* High
+* Medium
+* Low
+
+### How the Entries Were Created
+
+Each row in the dataset represents one CSE student.
+
+The dataset contains information about the student's CGPA, technical skills, soft skills, internship, certifications, projects and placement training.
+
+The Employability column is used as the target for the machine learning model.
+
+## 3. Preprocessing
+
+First, the Excel dataset is loaded into Python using pandas.
+
+Duplicate rows are removed from the dataset.
+
+The numerical columns are converted into numerical values so that they can be used for calculations and machine learning.
+
+If any numerical value is missing, it is filled using the median value of that column.
+
+Missing values in Internship and PlacementTraining are filled with "No".
+
+The Employability column is also checked for missing values.
+
+After preprocessing, the cleaned data is used for feature engineering.
+
+## 4. Feature Engineering
+
+Feature engineering is used to create useful features from the existing student data.
+
+The following features are used in the Feast FeatureView.
+
+| Feature                 | Meaning                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| cgpa                    | Student's CGPA                                                             |
+| programming             | Programming skill                                                          |
+| dsa                     | DSA skill                                                                  |
+| dbms                    | DBMS skill                                                                 |
+| os                      | Operating Systems skill                                                    |
+| cn                      | Computer Networks skill                                                    |
+| python                  | Python skill                                                               |
+| java                    | Java skill                                                                 |
+| webdevelopment          | Web development skill                                                      |
+| ai_ml                   | AI and Machine Learning skill                                              |
+| cloud                   | Cloud computing skill                                                      |
+| devops                  | DevOps skill                                                               |
+| cybersecurity           | Cybersecurity skill                                                        |
+| communication           | Communication skill                                                        |
+| aptitude                | Aptitude skill                                                             |
+| teamwork                | Teamwork skill                                                             |
+| certifications          | Number of certifications                                                   |
+| projects                | Number of projects                                                         |
+| technical_skill_average | Average of the 12 technical skills                                         |
+| soft_skill_average      | Average of Communication, Aptitude and Teamwork                            |
+| experience_score        | Score based on internship, placement training, certifications and projects |
+| overall_skill_score     | Overall score based on technical and soft skills                           |
+
+### Technical Skill Average
+
+The Technical Skill Average is calculated using all 12 technical skills.
+
+Technical Skill Average =
+
+(Programming + DSA + DBMS + OS + CN + Python + Java + WebDevelopment + AI_ML + Cloud + DevOps + CyberSecurity) / 12
+
+For example, if the total technical skill score is 80:
+
+Technical Skill Average = 80 / 12
+
+Technical Skill Average = 6.67
+
+### Soft Skill Average
+
+The Soft Skill Average is calculated using Communication, Aptitude and Teamwork.
+
+Soft Skill Average =
+
+(Communication + Aptitude + Teamwork) / 3
+
+### Experience Score
+
+The Experience Score is calculated using internship, placement training, certifications and projects.
+
+For Internship and PlacementTraining:
+
+Yes = 1
+
+No = 0
+
+The score is calculated as:
+
+Experience Score = Internship + Placement Training + Certifications + Projects
+
+### Overall Skill Score
+
+The Overall Skill Score is calculated using the technical skill average and soft skill average.
+
+Overall Skill Score =
+
+(Technical Skill Average + Soft Skill Average) / 2
+
+## 5. Difference Between Original Dataset and Feature Dataset
+
+The original dataset contains complete information about the students.
+
+It includes student details, CGPA, technical skills, soft skills, internship, certifications, projects, placement training and employability.
+
+The feature dataset contains the values needed for Feast and the machine learning model.
+
+Some new features are also created from the original columns:
+
+* Technical Skill Average
+* Soft Skill Average
+* Experience Score
+* Overall Skill Score
+
+The final feature data is saved as a Parquet file.
+
+## 6. Feast Architecture
+
+```text
+Original Dataset
+       |
+       v
+Feature Engineering
+       |
+       v
+Parquet Offline Data
+       |
+       v
+Feast FeatureView
+       |
+       +----------------------+
+       |                      |
+       v                      v
+Historical Features      Materialization
+       |                      |
+       v                      v
+Model Training          Online Store
+                              |
+                              v
+                       Online Retrieval
+                              |
+                              v
+                          Prediction
+```
+
+## 7. Implementation
+
+### Entity
+
+The entity used in this project is Student.
+
+StudentID is used to uniquely identify each student.
+
+Entity name:
+
+student
+
+Entity key:
+
+student_id
+
+### Data Source
+
+After feature engineering, the data is saved in Parquet format.
+
+The file used as the Feast data source is:
+
+student_features.parquet
+
+This file is used as the offline data source.
+
+### FeatureView
+
+The FeatureView is named:
+
+student_skill_features
+
+It contains the student's CGPA, technical skills, soft skills, certifications, projects and the calculated features.
+
+### Registration Using feast apply
+
+The Feast objects are registered using:
+
+```bash
+feast apply
+```
+
+This registers the entity, data source and FeatureView with Feast.
+
+### Historical Feature Retrieval
+
+Historical features are retrieved using:
+
+```python
+get_historical_features()
+```
+
+The historical features are taken from the offline data and are used for training the machine learning model.
+
+### Machine Learning Model
+
+A Random Forest Classifier is used as the machine learning model.
+
+The model uses the features retrieved from Feast to predict the student's employability.
+
+The possible predictions are:
+
+* High
+* Medium
+* Low
+
+The Employability column is used as the target and is not given as an input feature to the model.
+
+### Materialization
+
+After model training, the features are materialized from the offline store into the online store.
+
+The online store used in this project is SQLite.
+
+Materialization makes the feature values available for online retrieval.
+
+### Online Feature Retrieval
+
+Online features are retrieved using:
+
+```python
+get_online_features()
+```
+
+The StudentID is used to retrieve the features of a particular student.
+
+These retrieved features are then given to the trained machine learning model to make the final prediction.
+
+## 8. Results
+
+### Historical Feature Output
+
+The historical feature values for StudentID 1 are:
+
+| StudentID | CGPA | Technical Skill Average | Soft Skill Average | Experience Score | Overall Skill Score |
+| --------: | ---: | ----------------------: | -----------------: | ---------------: | ------------------: |
+|         1 | 8.69 |                    6.67 |               7.67 |            12.00 |                7.17 |
+
+### Model Accuracy
+
+The Random Forest model achieved an accuracy of:
+
+95.00%
+
+### Online Feature Output
+
+The online features retrieved for StudentID 1 are:
+
+| Feature                 | Value |
+| ----------------------- | ----: |
+| CGPA                    |  8.69 |
+| Programming             |     7 |
+| DSA                     |     7 |
+| DBMS                    |     7 |
+| OS                      |     6 |
+| CN                      |     6 |
+| Python                  |     8 |
+| Java                    |     7 |
+| WebDevelopment          |     6 |
+| AI_ML                   |     6 |
+| Cloud                   |     6 |
+| DevOps                  |     7 |
+| CyberSecurity           |     7 |
+| Communication           |     6 |
+| Aptitude                |     7 |
+| Teamwork                |    10 |
+| Certifications          |     5 |
+| Projects                |     5 |
+| Technical Skill Average |  6.67 |
+| Soft Skill Average      |  7.67 |
+| Experience Score        | 12.00 |
+| Overall Skill Score     |  7.17 |
+
+### Final Prediction
+
+For StudentID 1, the model gives:
+
+```text
+StudentID: 1
+Final Prediction: High
+```
+
+## 9. Complete Project Flow
+
+```text
+CSE Employability Dataset
+          |
+          v
+     Preprocessing
+          |
+          v
+   Feature Engineering
+          |
+          v
+student_features.parquet
+          |
+          v
+    Feast Entity
+          |
+          v
+   Feast Data Source
+          |
+          v
+    FeatureView
+          |
+          v
+      feast apply
+          |
+          +----------------------+
+          |                      |
+          v                      v
+ Historical Feature        Materialization
+    Retrieval                   |
+          |                      v
+          v                Online Store
+   Model Training               |
+          |                     v
+          |              Online Retrieval
+          |                     |
+          +----------+----------+
+                     |
+                     v
+                Prediction
+                     |
+                     v
+               Employability
+```
+
+## 10. Conclusion
+
+In this project, the CSE Employability Dataset was first cleaned and prepared for use.
+
+Feature engineering was then performed to create useful features such as Technical Skill Average, Soft Skill Average, Experience Score and Overall Skill Score.
+
+The processed data was saved as Parquet data and used in Feast.
+
+A Student entity was created using StudentID. A data source and FeatureView were also created. The Feast objects were registered using feast apply.
+
+Historical features were retrieved from the offline data and used to train a Random Forest classification model.
+
+The features were then materialized into the SQLite online store. Online features were retrieved using StudentID and given to the trained model.
+
+The model achieved 95.00% accuracy, and the prediction for StudentID 1 was High.
+
+This project demonstrates the complete process of using Feast with a simple machine learning model, from preprocessing the dataset to retrieving features and making the final prediction.
